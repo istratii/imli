@@ -16,7 +16,7 @@ class BoundaryDiscriminator:
         self._class = _class
         self._rect = rect
         self._init_dataset(hsi, lidar, groundtruth)
-        self._model = make_pipeline(
+        self._estimator = make_pipeline(
             StandardScaler(),
             LinearSVC(C=10, random_state=42, max_iter=2000, dual="auto"),
         )
@@ -55,13 +55,13 @@ class BoundaryDiscriminator:
         self._y_test = y[test_idx]
 
     def fit(self):
-        return self._model.fit(self._X_train, self._y_train)
+        return self._estimator.fit(self._X_train, self._y_train)
 
     def score(self):
-        return self._model.score(self._X_test, self._y_test)
+        return self._estimator.score(self._X_test, self._y_test)
 
     def predict(self, X):
-        return self._model.predict(X)
+        return self._estimator.predict(X)
 
     def predict_with_postprocessing(self, hsi, lidar, area_threshold=128):
         X = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
