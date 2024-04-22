@@ -28,12 +28,15 @@ class Classifier:
     def predict(self, X):
         return self._estimator.predict(X)
 
-    def _dataset_get(self, X, y, n_splits=1, test_size=0.2):
+    def _dataset_get(self, X, y, include_unknown=False, n_splits=1, test_size=0.2):
         splitter = StratifiedShuffleSplit(
             n_splits=n_splits, random_state=self._random_state, test_size=test_size
         )
         mask = np.isin(y, self._classes)
-        X, y = X[mask], y[mask]
+        if include_unknown:
+            y[~mask] = Classes.UNKNOWN
+        else:
+            X, y = X[mask], y[mask]
         train_idx, test_idx = next(splitter.split(X, y))
         return X[train_idx], y[train_idx], X[test_idx], y[test_idx]
 
