@@ -2,8 +2,7 @@ import numpy as np
 from sklearn.svm import LinearSVC
 
 from boundary_discriminator import BoundaryDiscriminator
-from classifier import Classifier
-from utils import Classes, data_get
+from utils import Classes, load, save
 
 
 class VegetationDiscriminator:
@@ -22,22 +21,25 @@ class VegetationDiscriminator:
         return savi > threshold
 
     @staticmethod
-    def discriminate_grass_synthetic(hsi, lidar, groundtruth):
+    def model_name():
+        return "boundary_discriminator_grass_synthetic"
+
+    @staticmethod
+    def fit(hsi, lidar, groundtruth):
         bd_grass_synthetic = BoundaryDiscriminator(
             (100, 200, 250, 350), Classes.GRASS_SYNTHETIC, hsi, lidar, groundtruth
         )
         bd_grass_synthetic.fit()
         assert bd_grass_synthetic.score() > 0.99
-        features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
-        mask = bd_grass_synthetic.predict(features) == Classes.GRASS_SYNTHETIC
-        mask = mask.reshape(groundtruth.shape)
-        return mask
+        save(bd_grass_synthetic, VegetationDiscriminator.model_name())
 
     @staticmethod
-    def predict(hsi, lidar, groundtruth):
+    def predict(hsi, lidar):
         ndvi = VegetationDiscriminator.ndvi(hsi)
         savi = VegetationDiscriminator.savi(hsi)
-        mask_synthetic = VegetationDiscriminator.discriminate_grass_synthetic(
-            hsi, lidar, groundtruth
-        )
-        return ndvi | savi | mask_synthetic
+        model = load(VegetationDiscriminator.model_name())
+        assert model is not None, "model was not found, call .fit()"
+        features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
+        mask_synt = model.predict(features) == Classes.GRASS_SYNTHETIC
+        mask_synt = mask_synt.reshape(hsi.shape[:-1])
+        return ndvi | savi | mask_synt
