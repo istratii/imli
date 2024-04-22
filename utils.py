@@ -72,5 +72,8 @@ def save(obj, name):
 
 
 def load(name):
-    with gzip.open(f"data/{name}.pkl", "rb") as f:
-        return pickle.load(f)
+    try:
+        with gzip.open(f"data/{name}.pkl", "rb") as f:
+            return pickle.load(f)
+    except:
+        pass
