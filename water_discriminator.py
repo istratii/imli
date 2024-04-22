@@ -5,8 +5,6 @@ from skimage.morphology import binary_dilation, square
 from boundary_discriminator import BoundaryDiscriminator
 from utils import Classes, load, save
 
-_MODEL_NAME = "boundary_discriminator_water"
-
 
 class WaterDescriminator:
     @staticmethod
@@ -17,18 +15,22 @@ class WaterDescriminator:
         return ndwi > threshold
 
     @staticmethod
+    def model_name():
+        return "boundary_discriminator_water"
+
+    @staticmethod
     def fit(hsi, lidar, groundtruth):
         bd_water = BoundaryDiscriminator(
             (10, 700, 390, 1200), Classes.WATER, hsi, lidar, groundtruth
         )
         bd_water.fit()
         assert bd_water.score() > 0.99
-        save(bd_water, _MODEL_NAME)
+        save(bd_water, WaterDescriminator.model_name())
 
     @staticmethod
     def predict(hsi, lidar):
-        model = load(_MODEL_NAME)
-        assert model is not None, f"model {_MODEL_NAME} was not found, call .fit()"
+        model = load(WaterDescriminator.model_name())
+        assert model is not None, f"model not found, call .fit()"
         features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
         mask = model.predict(features) == Classes.WATER
         mask = mask.reshape(hsi.shape[:-1])
