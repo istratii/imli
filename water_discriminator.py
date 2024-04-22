@@ -30,7 +30,7 @@ class WaterDescriminator:
     @staticmethod
     def predict(hsi, lidar):
         model = load(WaterDescriminator.model_name())
-        assert model is not None, f"model not found, call .fit()"
+        assert model is not None, "model not found, call .fit()"
         features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
         mask = model.predict(features) == Classes.WATER
         mask = mask.reshape(hsi.shape[:-1])
