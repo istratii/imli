@@ -3,7 +3,7 @@ from scipy.ndimage import median_filter
 from skimage.morphology import binary_dilation, square
 
 from boundary_discriminator import BoundaryDiscriminator
-from utils import Classes, load, save
+from utils import Classes, model_exists, model_load, model_save
 
 
 class WaterDescriminator:
@@ -20,16 +20,19 @@ class WaterDescriminator:
 
     @staticmethod
     def fit(hsi, lidar, groundtruth):
+        model_name = WaterDescriminator.model_name()
+        if model_exists(model_name):
+            return
         bd_water = BoundaryDiscriminator(
             (10, 700, 390, 1200), Classes.WATER, hsi, lidar, groundtruth
         )
         bd_water.fit()
         assert bd_water.score() > 0.99
-        save(bd_water, WaterDescriminator.model_name())
+        model_save(bd_water, model_name)
 
     @staticmethod
     def predict(hsi, lidar):
-        model = load(WaterDescriminator.model_name())
+        model = model_load(WaterDescriminator.model_name())
         assert model is not None, "model not found, call .fit()"
         features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
         mask = model.predict(features) == Classes.WATER

@@ -1,4 +1,5 @@
 import gzip
+import os
 import pickle
 from enum import Enum
 
@@ -66,14 +67,23 @@ def data_get():
     return X, y
 
 
-def save(obj, name):
+def model_save(obj, name):
     with gzip.open(f"data/{name}.pkl", "wb") as f:
         pickle.dump(obj, f)
 
 
-def load(name):
+def model_load(name):
     try:
         with gzip.open(f"data/{name}.pkl", "rb") as f:
             return pickle.load(f)
     except:
         pass
+
+
+def model_exists(name):
+    return os.path.isfile(f"data/{name}.pkl")
+
+
+def compute_coincidence_with_groundtruth(groundtruth, predicted, _class):
+    m = groundtruth == _class
+    return np.sum(predicted[m] == _class) / np.sum(m)

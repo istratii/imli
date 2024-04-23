@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.svm import LinearSVC
 
 from boundary_discriminator import BoundaryDiscriminator
-from utils import Classes, load, save
+from utils import Classes, model_exists, model_load, model_save
 
 
 class VegetationDiscriminator:
@@ -26,20 +26,23 @@ class VegetationDiscriminator:
 
     @staticmethod
     def fit(hsi, lidar, groundtruth):
+        model_name = VegetationDiscriminator.model_name()
+        if not model_exists(model_name):
+            return
         bd_grass_synthetic = BoundaryDiscriminator(
             (100, 200, 250, 350), Classes.GRASS_SYNTHETIC, hsi, lidar, groundtruth
         )
         bd_grass_synthetic.fit()
         assert bd_grass_synthetic.score() > 0.99
-        save(bd_grass_synthetic, VegetationDiscriminator.model_name())
+        model_save(bd_grass_synthetic, model_name)
 
     @staticmethod
     def predict(hsi, lidar):
         ndvi = VegetationDiscriminator.ndvi(hsi)
         savi = VegetationDiscriminator.savi(hsi)
-        model = load(VegetationDiscriminator.model_name())
+        model = model_load(VegetationDiscriminator.model_name())
         assert model is not None, "model was not found, call .fit()"
-        features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
-        mask_synt = model.predict(features) == Classes.GRASS_SYNTHETIC
+        mask_synt = model.predict_with_postprocessing(hsi, lidar)
+        mask_synt = mask_synt == Classes.GRASS_SYNTHETIC
         mask_synt = mask_synt.reshape(hsi.shape[:-1])
         return ndvi | savi | mask_synt
