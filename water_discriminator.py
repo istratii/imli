@@ -37,7 +37,7 @@ class WaterDescriminator:
         features = np.hstack((hsi.reshape(-1, hsi.shape[-1]), lidar.reshape(-1, 1)))
         mask = model.predict(features) == Classes.WATER
         mask = mask.reshape(hsi.shape[:-1])
-        mask = binary_dilation(mask, square(5))
+        mask = binary_dilation(mask, square(7))
         ndwi = WaterDescriminator.ndwi(hsi, 0.3)
         mask = mask & ndwi
         mask = median_filter(mask, 3)
