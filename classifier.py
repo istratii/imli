@@ -53,7 +53,7 @@ class Classifier:
         cv.fit(X_train, y_train)
         best_score = cv.score(X_test, y_test)
         if best_score > self._estimator.score(X_test, y_test):
-            self._estimator = grid_search.best_estimator_
+            self._estimator = cv.best_estimator_
         return best_score
 
     def cross_validation(self, n_splits=1):
