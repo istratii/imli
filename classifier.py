@@ -33,12 +33,13 @@ class Classifier:
             n_splits=n_splits, random_state=self._random_state, test_size=test_size
         )
         mask = np.isin(y, self._classes)
+        X_bis, y_bis = X.copy(), y.copy()
         if include_unknown:
-            y[~mask] = Classes.UNKNOWN
+            y_bis[~mask] = Classes.UNKNOWN
         else:
-            X, y = X[mask], y[mask]
-        train_idx, test_idx = next(splitter.split(X, y))
-        return X[train_idx], y[train_idx], X[test_idx], y[test_idx]
+            X_bis, y_bis = X_bis[mask], y_bis[mask]
+        train_idx, test_idx = next(splitter.split(X_bis, y_bis))
+        return X_bis[train_idx], y_bis[train_idx], X_bis[test_idx], y_bis[test_idx]
 
     def optimize(
         self,
