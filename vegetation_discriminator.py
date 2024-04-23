@@ -27,7 +27,7 @@ class VegetationDiscriminator:
     @staticmethod
     def fit(hsi, lidar, groundtruth):
         model_name = VegetationDiscriminator.model_name()
-        if not model_exists(model_name):
+        if model_exists(model_name):
             return
         bd_grass_synthetic = BoundaryDiscriminator(
             (100, 200, 250, 350), Classes.GRASS_SYNTHETIC, hsi, lidar, groundtruth
