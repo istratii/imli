@@ -40,7 +40,15 @@ class Classifier:
         train_idx, test_idx = next(splitter.split(X, y))
         return X[train_idx], y[train_idx], X[test_idx], y[test_idx]
 
-    def optimize(self, X, y, scaler_params=dict(), model_params=dict(), **grid_kwargs):
+    def optimize(
+        self,
+        X,
+        y,
+        include_unknown=False,
+        scaler_params=dict(),
+        model_params=dict(),
+        **grid_kwargs,
+    ):
         estimator_steps_names = list(self._estimator.named_steps)
         assert len(estimator_steps_names) > 1
         params = dict()
@@ -48,7 +56,9 @@ class Classifier:
             params[f"{estimator_steps_names[0]}__{name}"] = values
         for name, values in model_params.items():
             params[f"{estimator_steps_names[1]}__{name}"] = values
-        X_train, y_train, X_test, y_test = self._dataset_get(X, y)
+        X_train, y_train, X_test, y_test = self._dataset_get(
+            X, y, include_unknown=include_unknown
+        )
         cv = GridSearchCV(self._estimator, params, **grid_kwargs)
         cv.fit(X_train, y_train)
         best_score = cv.score(X_test, y_test)
